@@ -4,11 +4,18 @@ import { ExistingProfile } from "@/types/profile.types";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserRoundX, UserPen } from "lucide-react";
+import {
+  UserRoundX,
+  UserPen,
+  UserRoundCheck,
+  UserRoundMinus,
+} from "lucide-react";
 interface FriendsCircleProps {
   friends: ExistingProfile[];
   onProfileOpen: (id?: string) => void;
   onRemove: (id: string) => void;
+  onToggleSelectFriend: (profile: ExistingProfile) => void;
+  selectedFriends: ExistingProfile[];
 }
 const checkFriedOwesYou = (friend: ExistingProfile) => {
   return friend.share && friend.share < 0;
@@ -17,7 +24,12 @@ const FriendsCircle: React.FC<FriendsCircleProps> = ({
   friends,
   onProfileOpen,
   onRemove,
+  selectedFriends,
+  onToggleSelectFriend,
 }) => {
+  const isSelectedFried = (id: string) => {
+    return selectedFriends.some((friend) => friend.id === id);
+  };
   return (
     <div>
       <Button onClick={() => onProfileOpen()} className="mb-4">
@@ -25,21 +37,21 @@ const FriendsCircle: React.FC<FriendsCircleProps> = ({
       </Button>
       <div className="flex flex-wrap gap-4">
         {friends.map((friend) => (
-          <Card key={friend.id} className="w-[70%]">
+          <Card key={friend.id} className="h-32">
             <CardHeader>
-              <CardTitle className="flex gap-2 m-2">
-                <div className="flex gap-2 basis-2/3">
+              <CardTitle className="flex gap-1 m-1">
+                <div className="flex gap-1 basis-2/3">
                   <Avatar>
                     <AvatarImage src={friend.avatar} alt="Avatar" />
                     <AvatarFallback delayMs={600}>
                       {friend.name[0]}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="pt-2 mr-10 text-base font-bold capitalize">
+                  <span className="w-32 pt-2 mr-2 text-base font-bold capitalize">
                     {friend.name}
                   </span>
                 </div>
-                <div className="flex justify-end gap-4 basis-1/3">
+                <div className="flex justify-end gap-2 basis-1/3">
                   <Button
                     size={"sm"}
                     color="primary"
@@ -59,19 +71,21 @@ const FriendsCircle: React.FC<FriendsCircleProps> = ({
                     <span className="pr-1 text-xs">Delete</span>
                     <UserRoundX size={14} />
                   </Button>
+                  <Button
+                    size={"icon"}
+                    variant="ghost"
+                    onClick={() => onToggleSelectFriend(friend)}
+                  >
+                    {isSelectedFried(friend.id) ? (
+                      <UserRoundMinus size={24} color="red" strokeWidth={3} />
+                    ) : (
+                      <UserRoundCheck size={24} color="green" strokeWidth={3} />
+                    )}
+                  </Button>
                 </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="w-full ml-2">
-                <div className="text-sm text-lime-400">
-                  {friend.name} ows you Rs 20
-                </div>
-                <div className="text-sm text-red-400">
-                  You ows {friend.name} Rs 20
-                </div>
-              </div>
-
               {friend.share && (
                 <div className="w-full h-px bg-muted">
                   {checkFriedOwesYou(friend) ? (

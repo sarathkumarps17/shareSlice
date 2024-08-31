@@ -13,7 +13,9 @@ import Profile, {
 export default function ShareSplicer() {
   const { openDialog, closeDialog } = useDialog();
   const [friends, setFriends] = useState<ExistingProfile[]>([]);
-  const [selectedFriend, setSelectedFriend] = useState<Profile | null>(null);
+  const [editFriend, setEditFriend] = useState<Profile | null>(null);
+  const [selectedFriends, setSelectedFriends] = useState<ExistingProfile[]>([]);
+
   const USER_PROFILE: ExistingProfile = {
     id: "100000",
     name: "User",
@@ -26,13 +28,13 @@ export default function ShareSplicer() {
     openDialog();
     if (id) {
       const friend = friends.find((friend) => friend.id === id);
-      setSelectedFriend(friend || null);
+      setEditFriend(friend || null);
     } else {
       const newFriend: NewProfile = {
         isNew: true,
         name: "",
       };
-      setSelectedFriend(newFriend);
+      setEditFriend(newFriend);
     }
   };
   const addFriend = (profile: ExistingProfile) => {
@@ -63,6 +65,15 @@ export default function ShareSplicer() {
       closeDialog();
     }
   };
+  const onToggleSelectFriend = (profile: ExistingProfile) => {
+    if (selectedFriends.includes(profile)) {
+      setSelectedFriends((prev) =>
+        prev.filter((friend) => friend.id !== profile.id)
+      );
+    } else {
+      setSelectedFriends((prev) => [...prev, profile]);
+    }
+  };
   return (
     <div>
       <Viewport
@@ -71,27 +82,27 @@ export default function ShareSplicer() {
             friends={friends}
             onProfileOpen={openProfileModal}
             onRemove={removeFriend}
+            onToggleSelectFriend={onToggleSelectFriend}
+            selectedFriends={selectedFriends}
           />
         }
         SplitCalculator={
           <SplitCalculator
-            friends={friends}
+            friends={selectedFriends}
             userProfile={userProfile}
+            selectedFriends={selectedFriends}
+            toggleSelectedFriend={onToggleSelectFriend}
             onSplit={(data) => {
               console.log(data);
             }}
           />
         }
       />
-      {selectedFriend && (
+      {editFriend && (
         <FriendProfile
-          profile={selectedFriend}
+          profile={editFriend}
           onSave={onSave}
-          key={
-            IsNewProfile(selectedFriend)
-              ? new Date().getTime()
-              : selectedFriend.id
-          }
+          key={IsNewProfile(editFriend) ? new Date().getTime() : editFriend.id}
         />
       )}
     </div>
